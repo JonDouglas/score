@@ -179,10 +179,10 @@ namespace Score.Services
         public async Task<ScoreSection> GetValidNuSpecScoreSectionAsync(PackageContext context)
         {
             NuspecValidator validator = new NuspecValidator();
-            var results = await validator.ValidateAsync(context.NuspecReader);
+            var results = await validator.ValidateAsync(context);
             return new()
             {
-                Title = "Provide a valid .nuspec",
+                Title = results.ToString(),
                 MaxScore = 10,
                 CurrentScore = context.NuspecReader != null ? 10 : 0
             };
