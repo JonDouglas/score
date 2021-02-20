@@ -35,6 +35,7 @@ namespace Score.Services
         private async Task<List<ScoreSection>> PassStaticAnalysisAsync(PackageContext context)
         {
             //Code has no errors, warnings, lints, or formatting issues. 30 score
+            //Code does all the health checks for assemblies.
             return new List<ScoreSection>();
         }
 

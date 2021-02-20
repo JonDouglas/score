@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -13,6 +14,7 @@ using Score.Services;
 using Score.Utilities;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using Score.Models;
 
 namespace Score.Commands
 {
@@ -33,7 +35,45 @@ namespace Score.Commands
                 //then we can get the nuspec from the package.
                 packageContext.NuspecReader = await nuGetService.GetNuspecFromPackage(packageContext);
                 packageContext.PackageMetadata = await nuGetService.GetNuGetPackageMetadataFromPackage(packageContext);
-                ScoreDumper.DumpScore();
+                
+                //Create a Score & pass the packagecontext
+                Models.Score score = new Models.Score()
+                {
+                    ScoreReport = new ScoreReport()
+                    {
+                        FollowsNuGetConventions = new List<ScoreSection>()
+                        {
+                            new ScoreSection()
+                            {
+                                Title = "Provides valid .nuspec",
+                                CurrentScore = 2,
+                                MaxScore = 5,
+                                Status = true,
+                                Summaries = new List<Summary>()
+                                {
+                                    new Summary()
+                                    {
+                                        Issue = "The package description is too short.",
+                                        Resolution = "Add more detail to the description field of the .nuspec."
+                                    }
+                                }
+                            },
+                            new ScoreSection()
+                            {
+                                Title = "Provides valid README",
+                                CurrentScore = 0,
+                                MaxScore = 5
+                            },
+                            new ScoreSection()
+                            {
+                                Title = "Provides valid CHANGELOG",
+                                CurrentScore = 5,
+                                MaxScore = 5
+                            }          
+                        }
+                    }
+                };
+                ScoreDumper.DumpScore(score);
                 ScoreDumper.DumpSettings(settings);
                 return 0;
             }

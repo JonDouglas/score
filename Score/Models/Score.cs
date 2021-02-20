@@ -4,6 +4,6 @@ namespace Score.Models
 {
     public class Score
     {
-        private ScoreReport ScoreReport { get; set; }
+        public ScoreReport ScoreReport { get; set; }
     }
 }

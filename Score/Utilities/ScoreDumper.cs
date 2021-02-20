@@ -27,26 +27,40 @@ namespace Score.Utilities
 
             AnsiConsole.Render(table);
         }
-        
-        public static void DumpScore()
-        {
-            var tree = new Tree(new Markup(Emoji.Known.CheckMarkButton + "Provides valid .nuspec"));
 
-// Add some nodes
-            var foo = tree.AddNode("[yellow]The package description is too short.[/]");
-            foo.AddNode("Add more detail to the description field of pubspec.yaml. Use 60 to 180 characters to describe the package, what it does, and its target use case.");
-            
-            var table = new Table()
+        public static void DumpScore(Models.Score score)
+        {
+            //Score -> ScoreReport -> 5 List<ScoreSections> (Iterate) -> ScoreSection (Tree & Nodes & Table)
+            var table = new Table();
+            table
                 .Expand()
                 .Border(TableBorder.Minimal)
                 .AddColumn(new TableColumn("[u]Follows NuGet Conventions[/]"))
                 .AddColumn(new TableColumn("[u]Score[/]"))
-                .AddColumn(new TableColumn("[u]Total Score[/]"))
-                .AddRow(tree, new Markup("10"), new Markup("[bold]10[/]"))
-                .AddRow(new Markup(Emoji.Known.CrossMark + "Provides valid README.md"), new Markup("0"), new Markup("[bold]5[/]"))
-                .AddRow(new Markup(Emoji.Known.CheckMarkButton + "Provides valid RELEASENOTES.md"), new Markup("5"), new Markup("[bold]5[/]"));
+                .AddColumn(new TableColumn("[u]Total Score[/]"));
+            
+            foreach (var scoreSection in score.ScoreReport.FollowsNuGetConventions)
+            {
+                //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
+                var scoreSectionTree = new Tree(new Markup(scoreSection.Title));
+
+                if (scoreSection.Status)
+                {
+                    foreach (var scoreSectionSummary in scoreSection.Summaries)
+                    {
+                        var issueNode = scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
+                        issueNode.AddNode(
+                            $"[red]{scoreSectionSummary.Resolution}[/]");
+                    }
+                }
+
+                table
+                    .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
+                        new Markup($"[bold]{scoreSection.MaxScore}[/]"));
+            }
 
             AnsiConsole.Render(table);
         }
+
     }
 }
