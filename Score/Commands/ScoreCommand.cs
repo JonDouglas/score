@@ -70,6 +70,30 @@ namespace Score.Commands
                                 CurrentScore = 5,
                                 MaxScore = 5
                             }          
+                        },
+                        ProvidesDocumentation = new List<ScoreSection>()
+                        {
+                            new ScoreSection()
+                            {
+                                Title = "Package has example",
+                                CurrentScore = 0,
+                                MaxScore = 10,
+                                Status = true,
+                                Summaries = new List<Summary>()
+                                {
+                                    new Summary()
+                                    {
+                                        Issue = "The package contains no example.",
+                                        Resolution = "Add an example/ to your package layout."
+                                    }
+                                }
+                            },
+                            new ScoreSection()
+                            {
+                                Title = "20% or more public API is commented",
+                                CurrentScore = 0,
+                                MaxScore = 10
+                            }
                         }
                     }
                 };
