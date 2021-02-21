@@ -1,12 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using NuGet.Common;
-using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
+﻿using System.Threading.Tasks;
 using Score.Commands;
 using Spectre.Console.Cli;
 
