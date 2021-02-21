@@ -61,8 +61,6 @@ namespace Score.Services
                 logger,
                 cancellationToken);
 
-            Console.WriteLine($"Downloaded package {packageId} {packageVersion}");
-
             using var packageReader = new PackageArchiveReader(packageStream);
             var nuspecReader = await packageReader.GetNuspecReaderAsync(cancellationToken);
 
@@ -158,8 +156,6 @@ namespace Score.Services
                 cache,
                 logger,
                 cancellationToken);
-
-            Console.WriteLine($"Downloaded package {packageId} {packageVersion}");
 
             using var packageReader = new PackageArchiveReader(packageStream);
             return await packageReader.GetNuspecReaderAsync(cancellationToken);
