@@ -1,5 +1,6 @@
 using System.Linq;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 using Spectre.Console.Cli;
 
 namespace Score.Utilities
@@ -26,24 +27,26 @@ namespace Score.Utilities
 
             AnsiConsole.Render(table);
         }
+        
 
         public static void DumpScore(Models.Score score)
         {
+            AnsiConsole.Render(new FigletText(".NET SCORE").Centered().Color(Color.Purple));
             //Score -> ScoreReport -> 5 List<ScoreSections> (Iterate) -> ScoreSection (Tree & Nodes & Table)
             var nugetConventionsTable = new Table();
             nugetConventionsTable
                 .Collapse()
-                .Border(TableBorder.MinimalHeavyHead)
-                .AddColumn(new TableColumn("[u]Follows NuGet Conventions[/]"))
-                .AddColumn(new TableColumn("[u]Score[/]"))
-                .AddColumn(new TableColumn("[u]Total Score[/]"));
+                .Border(TableBorder.Rounded)
+                .AddColumn(new TableColumn("[u]Follows NuGet Conventions[/]").Footer("[bold u].NET Score[/]"))
+                .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.CurrentScore)}[/]"))
+                .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.MaxScore)}[/]"));
 
             if (score?.ScoreReport != null)
             {
                 foreach (var scoreSection in score.ScoreReport?.FollowsNuGetConventions)
                 {
                     //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                    var scoreSectionTree = new Tree(new Markup(scoreSection.Title));
+                    var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
 
                     if (scoreSection.Summaries != null)
                         foreach (var scoreSectionSummary in scoreSection?.Summaries)
@@ -58,11 +61,9 @@ namespace Score.Utilities
                             new Markup($"[bold]{scoreSection.MaxScore}[/]"));
                 }
 
-                nugetConventionsTable.AddEmptyRow().AddRow("[bold].NET Score[/]",
-                    $"[bold green on yellow]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.CurrentScore)}[/]",
-                    $"[bold yellow on blue]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.MaxScore)}[/]");
-
                 AnsiConsole.Render(nugetConventionsTable);
+
+                //Add a BreakdownChart() when 1.0.0 is released in Spectre.Console.
 
                 var providesDocumentationTable = new Table();
                 providesDocumentationTable
