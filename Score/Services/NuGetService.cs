@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -168,22 +169,49 @@ namespace Score.Services
         {
             var validator = new NuspecValidator();
             var results = await validator.ValidateAsync(context);
+            //Start to score the nuspec vs. the results.
+            List<Summary> summaries = new List<Summary>();
+            foreach (var failure in results.Errors)
+            {
+                Summary summary = new Summary()
+                {
+                    Issue = failure.PropertyName,
+                    Resolution = failure.ErrorMessage
+                };
+                summaries.Add(summary);
+            }
             return new ScoreSection()
             {
                 Title = "Has valid .nuspec",
                 MaxScore = 10,
-                CurrentScore = context.NuspecReader != null ? 10 : 0,
-                Status = results.IsValid
+                CurrentScore = 10 - results.Errors.Count,
+                Status = results.IsValid,
+                Summaries = summaries
             };
         }
 
         public async Task<ScoreSection> GetReleaseNoteScoreSectionAsync(PackageContext context)
         {
-            return new()
+            var validator = new ReleaseNotesValidator();
+            var results = await validator.ValidateAsync(context);
+            //Start to score the nuspec vs. the results.
+            List<Summary> summaries = new List<Summary>();
+            foreach (var failure in results.Errors)
             {
-                Title = "Provide a valid RELEASENOTEs.md",
-                MaxScore = 5,
-                CurrentScore = 5
+                Summary summary = new Summary()
+                {
+                    Issue = failure.PropertyName,
+                    Resolution = failure.ErrorMessage
+                };
+                summaries.Add(summary);
+            }
+            return new ScoreSection()
+            {
+                Title = "Provide valid release notes",
+                MaxScore = 10,
+                CurrentScore = results.Errors.Count > 0 ? 0 : 10,
+                Status = results.IsValid,
+                Summaries = summaries
             };
         }
     }

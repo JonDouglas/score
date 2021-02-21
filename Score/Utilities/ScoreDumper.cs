@@ -1,3 +1,4 @@
+using System.Linq;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -31,8 +32,8 @@ namespace Score.Utilities
             //Score -> ScoreReport -> 5 List<ScoreSections> (Iterate) -> ScoreSection (Tree & Nodes & Table)
             var nugetConventionsTable = new Table();
             nugetConventionsTable
-                .Expand()
-                .Border(TableBorder.Minimal)
+                .Collapse()
+                .Border(TableBorder.MinimalHeavyHead)
                 .AddColumn(new TableColumn("[u]Follows NuGet Conventions[/]"))
                 .AddColumn(new TableColumn("[u]Score[/]"))
                 .AddColumn(new TableColumn("[u]Total Score[/]"));
@@ -56,6 +57,10 @@ namespace Score.Utilities
                         .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
                             new Markup($"[bold]{scoreSection.MaxScore}[/]"));
                 }
+
+                nugetConventionsTable.AddEmptyRow().AddRow("[bold].NET Score[/]",
+                    $"[bold green on yellow]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.CurrentScore)}[/]",
+                    $"[bold yellow on blue]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.MaxScore)}[/]");
 
                 AnsiConsole.Render(nugetConventionsTable);
 

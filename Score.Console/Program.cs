@@ -10,7 +10,7 @@ namespace Score.Console
     {
         private static async Task Main(string[] args)
         {
-            var settings = new ScoreCommand.Settings {PackageName = "AutoFac", PackageVersion = "6.1.0"};
+            var settings = new ScoreCommand.Settings {PackageName = "Xamarin.Android.CirclePageIndicator", PackageVersion = "1.1.1"};
             var nuGetService = new NuGetService();
             var packageContext = new PackageContext(settings);
             packageContext.NuspecReader = await nuGetService.GetNuspecFromPackage(packageContext);
