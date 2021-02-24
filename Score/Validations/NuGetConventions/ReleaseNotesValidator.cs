@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Score.Models;
 
-namespace Score.Validations
+namespace Score.Validations.NuGetConventions
 {
     public class ReleaseNotesValidator: AbstractValidator<PackageContext>
     {

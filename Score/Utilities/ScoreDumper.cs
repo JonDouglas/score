@@ -67,18 +67,18 @@ namespace Score.Utilities
 
                 var providesDocumentationTable = new Table();
                 providesDocumentationTable
-                    .Expand()
-                    .Border(TableBorder.Minimal)
-                    .AddColumn(new TableColumn("[u]Provides Documentation[/]"))
-                    .AddColumn(new TableColumn("[u]Score[/]"))
-                    .AddColumn(new TableColumn("[u]Total Score[/]"));
+                    .Collapse()
+                    .Border(TableBorder.Rounded)
+                    .AddColumn(new TableColumn("[u]Provides Documentation[/]").Footer("[bold u].NET Score[/]"))
+                    .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.ProvidesDocumentation.Sum(x => x.CurrentScore)}[/]"))
+                    .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.ProvidesDocumentation.Sum(x => x.MaxScore)}[/]"));
 
                 if (score?.ScoreReport != null)
                 {
                     foreach (var scoreSection in score.ScoreReport?.ProvidesDocumentation)
                     {
                         //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                        var scoreSectionTree = new Tree(new Markup(scoreSection.Title));
+                        var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
 
                         if (scoreSection.Summaries != null)
                             foreach (var scoreSectionSummary in scoreSection?.Summaries)

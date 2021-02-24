@@ -31,19 +31,20 @@ namespace Score.Services
 
         private async Task<List<ScoreSection>> FollowsNuGetConventionsAsync(PackageContext context)
         {
-            var nuGetService = new NuGetService();
+            var scoreSectionService = new ScoreSectionService();
             //Provides a valid .nuspec file. 10 score
-            var nuspecScoreSection = await nuGetService.GetValidNuSpecScoreSectionAsync(context);
+            var nuspecScoreSection = await scoreSectionService.GetValidNuSpecScoreSectionAsync(context);
             //Provides a valid README file. 5 score
             //This doesn't exist so when it does we'll add it.
             //Provides a valid CHANGELOG/RELEASENOTES file. 5 score
-            var releaseNotesScoreSection = await nuGetService.GetReleaseNoteScoreSectionAsync(context);
+            var releaseNotesScoreSection = await scoreSectionService.GetReleaseNoteScoreSectionAsync(context);
             return new List<ScoreSection> {nuspecScoreSection, releaseNotesScoreSection};
         }
 
         private async Task<List<ScoreSection>> ProvidesDocumentationAsync(PackageContext context)
         {
             //Provides an example. 10 score
+            
             //20% of more of public API has XML comments. 10 score
             //Load the assembly from disk (downloaded & Assembly)
             //Read more on https://www.mono-project.com/docs/tools+libraries/libraries/Mono.Cecil/faq/
@@ -78,22 +79,11 @@ namespace Score.Services
 
             }
             
-            Console.WriteLine((double)documentedMembers / members);
+            context.PublicApiDocumentationPercent = (double) documentedMembers / members;
             
-            //Assembly assembly = Assembly.Load(((MemoryStream)context.PackageArchiveReader.GetStream(stringPath)).ToArray());
-
-            // var types = assembly.DefinedTypes;
-            // foreach (var type in types)
-            // {
-            //     //Type grab the members / methods / etc.
-            // }
-            
-            //Load the xml file from disk (downlaoded & .XML)
-            //XML parsing of the <members> element & get the count of <member> children.
-            
-            // XML Members / Assembly Members from the Types = % of public API having XML comments
-            //EX: 1700/5000 = 34% (validated correctly)
-            return new();
+            var scoreSectionService = new ScoreSectionService();
+            var apiDocumentationScoreSection = await scoreSectionService.GetApiDocumentationScoreSectionAsync(context);
+            return new List<ScoreSection> { apiDocumentationScoreSection};
         }
 
         private async Task<List<ScoreSection>> SupportsMultiplePlatformsAsync(PackageContext context)

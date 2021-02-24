@@ -23,5 +23,7 @@ namespace Score.Models
         
         public PackageArchiveReader PackageArchiveReader { get; set; }
         
+        public double PublicApiDocumentationPercent { get; set; }
+        
     }
 }

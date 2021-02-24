@@ -10,7 +10,7 @@ namespace Score.Console
     {
         private static async Task Main(string[] args)
         {
-            var settings = new ScoreCommand.Settings {PackageName = "AppIntro", PackageVersion = "1.0.0"};
+            var settings = new ScoreCommand.Settings {PackageName = "NuGet.ProjectModel", PackageVersion = "5.8.0"};
             var nuGetService = new NuGetService();
             var packageContext = new PackageContext(settings);
             packageContext.NuspecReader = await nuGetService.GetNuspecFromPackage(packageContext);
