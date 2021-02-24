@@ -147,7 +147,7 @@ namespace Score.Services
 
             var packageId = context.PackageName;
             var packageVersion = context.NuGetVersion;
-            using var packageStream = new MemoryStream();
+            var packageStream = new MemoryStream();
 
             await resource.CopyNupkgToStreamAsync(
                 packageId,
@@ -156,8 +156,9 @@ namespace Score.Services
                 cache,
                 logger,
                 cancellationToken);
-
-            using var packageReader = new PackageArchiveReader(packageStream);
+            
+            var packageReader = new PackageArchiveReader(packageStream);
+            context.PackageArchiveReader = packageReader;
             return await packageReader.GetNuspecReaderAsync(cancellationToken);
         }
 

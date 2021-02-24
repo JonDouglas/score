@@ -1,3 +1,4 @@
+using System.IO;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -19,5 +20,8 @@ namespace Score.Models
         public NuGetVersion NuGetVersion { get; set; }
         public NuspecReader NuspecReader { get; set; }
         public IPackageSearchMetadata PackageMetadata { get; set; }
+        
+        public PackageArchiveReader PackageArchiveReader { get; set; }
+        
     }
 }
