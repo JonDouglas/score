@@ -48,38 +48,42 @@ namespace Score.Services
             //20% of more of public API has XML comments. 10 score
             //Load the assembly from disk (downloaded & Assembly)
             //Read more on https://www.mono-project.com/docs/tools+libraries/libraries/Mono.Cecil/faq/
-            int members = 0;
-            int documentedMembers = 0;
-            var assemblyStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.EndsWith(".dll")).FirstOrDefault();
-            await using var assemblyStream = context.PackageArchiveReader.GetStream(assemblyStringPath);
+            foreach (var target in context.PackageArchiveReader.GetLibItems())
+            {
+                int members = 0;
+                int documentedMembers = 0;
+                var assemblyStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.Contains(target.TargetFramework.GetShortFolderName())).Where(x => x.EndsWith(".dll")).FirstOrDefault();
+                await using var assemblyStream = context.PackageArchiveReader.GetStream(assemblyStringPath);
 
-            await using(var assemblyMemoryStream = new MemoryStream()) {
-                await assemblyStream.CopyToAsync(assemblyMemoryStream);
-                assemblyMemoryStream.Position = 0;
-                AssemblyDefinition ad = AssemblyDefinition.ReadAssembly(assemblyMemoryStream);
-                foreach (TypeDefinition type in ad.MainModule.Types) {
-                    if (type.IsPublic)
-                    {
-                        members += type.Methods.Count;
-                        members += type.Fields.Count;
-                        members += type.Properties.Count;
+                await using(var assemblyMemoryStream = new MemoryStream()) {
+                    await assemblyStream.CopyToAsync(assemblyMemoryStream);
+                    assemblyMemoryStream.Position = 0;
+                    AssemblyDefinition ad = AssemblyDefinition.ReadAssembly(assemblyMemoryStream);
+                    foreach (TypeDefinition type in ad.MainModule.Types) {
+                        if (type.IsPublic)
+                        {
+                            members += type.Methods.Count;
+                            members += type.Fields.Count;
+                            members += type.Properties.Count;
+                        }
                     }
                 }
-            }
             
-            var xmlStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.EndsWith(".xml")).FirstOrDefault();
-            await using var xmlStream = context.PackageArchiveReader.GetStream(xmlStringPath);
+                var xmlStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.Contains(target.TargetFramework.GetShortFolderName())).Where(x => x.EndsWith(".xml")).FirstOrDefault();
+                await using var xmlStream = context.PackageArchiveReader.GetStream(xmlStringPath);
             
-            await using(var xmlMemoryStream = new MemoryStream()) {
-                await xmlStream.CopyToAsync(xmlMemoryStream);
-                xmlMemoryStream.Position = 0;
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.Load(xmlMemoryStream);
-                documentedMembers = xmlDocument.GetElementsByTagName("member").Count;
+                await using(var xmlMemoryStream = new MemoryStream()) {
+                    await xmlStream.CopyToAsync(xmlMemoryStream);
+                    xmlMemoryStream.Position = 0;
+                    XmlDocument xmlDocument = new XmlDocument();
+                    xmlDocument.Load(xmlMemoryStream);
+                    documentedMembers = xmlDocument.GetElementsByTagName("member").Count;
 
+                }
+            
+                context.PublicApiDocumentationPercent = (double) documentedMembers / members;
             }
             
-            context.PublicApiDocumentationPercent = (double) documentedMembers / members;
             
             var scoreSectionService = new ScoreSectionService();
             var apiDocumentationScoreSection = await scoreSectionService.GetApiDocumentationScoreSectionAsync(context);

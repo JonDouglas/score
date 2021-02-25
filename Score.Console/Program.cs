@@ -10,7 +10,7 @@ namespace Score.Console
     {
         private static async Task Main(string[] args)
         {
-            var settings = new ScoreCommand.Settings {PackageName = "NuGet.ProjectModel", PackageVersion = "5.8.0"};
+            var settings = new ScoreCommand.Settings {PackageName = "Autofac", PackageVersion = "6.1.0"};
             var nuGetService = new NuGetService();
             var packageContext = new PackageContext(settings);
             packageContext.NuspecReader = await nuGetService.GetNuspecFromPackage(packageContext);
@@ -18,44 +18,7 @@ namespace Score.Console
 
             var scoreService = new ScoreService();
             var score = await scoreService.ScorePackage(packageContext);
-            //var result = await nuGetService.GetValidNuSpecScoreSectionAsync(packageContext);
 
-            // Models.Score score = new Models.Score()
-            // {
-            //     ScoreReport = new ScoreReport()
-            //     {
-            //         FollowsNuGetConventions = new List<ScoreSection>()
-            //         {
-            //             new ScoreSection()
-            //             {
-            //                 Title = "Provides valid .nuspec",
-            //                 CurrentScore = 2,
-            //                 MaxScore = 5,
-            //                 Status = true,
-            //                 Summaries = new List<Summary>()
-            //                 {
-            //                     new Summary()
-            //                     {
-            //                         Issue = "The package description is too short.",
-            //                         Resolution = "Add more detail to the description field of the .nuspec."
-            //                     }
-            //                 }
-            //             },
-            //             new ScoreSection()
-            //             {
-            //                 Title = "Provides valid README",
-            //                 CurrentScore = 0,
-            //                 MaxScore = 5
-            //             },
-            //             new ScoreSection()
-            //             {
-            //                 Title = "Provides valid CHANGELOG",
-            //                 CurrentScore = 5,
-            //                 MaxScore = 5
-            //             }          
-            //         }
-            //     }
-            // };
             ScoreDumper.DumpScore(score);
         }
     }
