@@ -48,6 +48,7 @@ namespace Score.Services
             //20% of more of public API has XML comments. 10 score
             //Load the assembly from disk (downloaded & Assembly)
             //Read more on https://www.mono-project.com/docs/tools+libraries/libraries/Mono.Cecil/faq/
+            
             foreach (var target in context.PackageArchiveReader.GetLibItems())
             {
                 int members = 0;
@@ -80,8 +81,12 @@ namespace Score.Services
                     documentedMembers = xmlDocument.GetElementsByTagName("member").Count;
 
                 }
-            
-                context.PublicApiDocumentationPercent = (double) documentedMembers / members;
+
+                NuGetFrameworkDocumentation frameworkDocumentation = new NuGetFrameworkDocumentation();
+                frameworkDocumentation.NuGetFramework = target.TargetFramework;
+                frameworkDocumentation.PublicApiDocumentationPercent = ((double) documentedMembers / members);
+
+                context.NuGetFrameworkDocumentationList.Add(frameworkDocumentation);
             }
             
             

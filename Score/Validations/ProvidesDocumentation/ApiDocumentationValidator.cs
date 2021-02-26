@@ -4,7 +4,7 @@ using Score.Models;
 
 namespace Score.Validations.ProvidesDocumentation
 {
-    public class ApiDocumentationValidator: AbstractValidator<PackageContext>
+    public class ApiDocumentationValidator: AbstractValidator<NuGetFrameworkDocumentation>
     {
         public ApiDocumentationValidator()
         {

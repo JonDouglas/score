@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -13,6 +15,7 @@ namespace Score.Models
             PackageName = settings?.PackageName;
             PackageVersion = settings?.PackageVersion;
             NuGetVersion = new NuGetVersion(PackageVersion);
+            NuGetFrameworkDocumentationList = new List<NuGetFrameworkDocumentation>();
         }
 
         public string PackageName { get; set; }
@@ -23,7 +26,17 @@ namespace Score.Models
         
         public PackageArchiveReader PackageArchiveReader { get; set; }
         
-        public double PublicApiDocumentationPercent { get; set; }
+        public List<NuGetFrameworkDocumentation> NuGetFrameworkDocumentationList { get; set; }
         
+    }
+
+    public class NuGetFrameworkDocumentation
+    {
+        public NuGetFrameworkDocumentation()
+        {
+            
+        }
+        public NuGetFramework NuGetFramework { get; set; }
+        public double PublicApiDocumentationPercent { get; set; }
     }
 }
