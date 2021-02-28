@@ -54,37 +54,47 @@ namespace Score.Services
                 int members = 0;
                 int documentedMembers = 0;
                 var assemblyStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.Contains(target.TargetFramework.GetShortFolderName())).Where(x => x.EndsWith(".dll")).FirstOrDefault();
-                await using var assemblyStream = context.PackageArchiveReader.GetStream(assemblyStringPath);
+                if (assemblyStringPath != null)
+                {
+                    await using var assemblyStream = context.PackageArchiveReader.GetStream(assemblyStringPath);
 
-                await using(var assemblyMemoryStream = new MemoryStream()) {
-                    await assemblyStream.CopyToAsync(assemblyMemoryStream);
-                    assemblyMemoryStream.Position = 0;
-                    AssemblyDefinition ad = AssemblyDefinition.ReadAssembly(assemblyMemoryStream);
-                    foreach (TypeDefinition type in ad.MainModule.Types) {
-                        if (type.IsPublic)
+                    await using (var assemblyMemoryStream = new MemoryStream())
+                    {
+                        await assemblyStream.CopyToAsync(assemblyMemoryStream);
+                        assemblyMemoryStream.Position = 0;
+                        AssemblyDefinition ad = AssemblyDefinition.ReadAssembly(assemblyMemoryStream);
+                        foreach (TypeDefinition type in ad.MainModule.Types)
                         {
-                            members += type.Methods.Count;
-                            members += type.Fields.Count;
-                            members += type.Properties.Count;
+                            if (type.IsPublic)
+                            {
+                                members += type.Methods.Count;
+                                members += type.Fields.Count;
+                                members += type.Properties.Count;
+                            }
                         }
                     }
                 }
-            
-                var xmlStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.Contains(target.TargetFramework.GetShortFolderName())).Where(x => x.EndsWith(".xml")).FirstOrDefault();
-                await using var xmlStream = context.PackageArchiveReader.GetStream(xmlStringPath);
-            
-                await using(var xmlMemoryStream = new MemoryStream()) {
-                    await xmlStream.CopyToAsync(xmlMemoryStream);
-                    xmlMemoryStream.Position = 0;
-                    XmlDocument xmlDocument = new XmlDocument();
-                    xmlDocument.Load(xmlMemoryStream);
-                    documentedMembers = xmlDocument.GetElementsByTagName("member").Count;
 
+                var xmlStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.Contains(target.TargetFramework.GetShortFolderName())).Where(x => x.EndsWith(".xml")).FirstOrDefault();
+                if (xmlStringPath != null)
+                {
+                    await using var xmlStream = context.PackageArchiveReader.GetStream(xmlStringPath);
+                    await using(var xmlMemoryStream = new MemoryStream()) {
+                        await xmlStream.CopyToAsync(xmlMemoryStream);
+                        xmlMemoryStream.Position = 0;
+                        XmlDocument xmlDocument = new XmlDocument();
+                        xmlDocument.Load(xmlMemoryStream);
+                        documentedMembers = xmlDocument.GetElementsByTagName("member").Count;
+
+                    }
+                    
                 }
 
-                NuGetFrameworkDocumentation frameworkDocumentation = new NuGetFrameworkDocumentation();
-                frameworkDocumentation.NuGetFramework = target.TargetFramework;
-                frameworkDocumentation.PublicApiDocumentationPercent = ((double) documentedMembers / members);
+                NuGetFrameworkDocumentation frameworkDocumentation = new NuGetFrameworkDocumentation
+                {
+                    NuGetFramework = target.TargetFramework,
+                    PublicApiDocumentationPercent = ((double) documentedMembers / members)
+                };
 
                 context.NuGetFrameworkDocumentationList.Add(frameworkDocumentation);
             }
@@ -100,17 +110,9 @@ namespace Score.Services
             //Supports all possible platforms. 20 score
             //Check manually for netstandard2.0 & net5.0 lib shortnames
             //Give 10 points to each
-            var libFolders = await context.PackageArchiveReader.GetLibItemsAsync(new CancellationToken());
-            foreach (var lib in libFolders)
-            {
-                if (lib.TargetFramework.GetShortFolderName() == "netstandard2.0" ||
-                    lib.TargetFramework.GetShortFolderName() == "net5.0")
-                {
-                    var t = "Yes";
-                }
-            }
-            
-            return new();
+            var scoreSectionService = new ScoreSectionService();
+            var apiDocumentationScoreSection = await scoreSectionService.GetMultiplePlatformsScoreSectionAsync(context);
+            return new List<ScoreSection> { apiDocumentationScoreSection};
         }
 
         private async Task<List<ScoreSection>> PassStaticAnalysisAsync(PackageContext context)

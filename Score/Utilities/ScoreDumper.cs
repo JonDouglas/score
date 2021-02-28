@@ -95,20 +95,20 @@ namespace Score.Utilities
 
                     AnsiConsole.Render(providesDocumentationTable);
 
-                    var supportMultiplePlatformsTable = new Table();
-                    supportMultiplePlatformsTable
-                        .Expand()
-                        .Border(TableBorder.Minimal)
-                        .AddColumn(new TableColumn("[u]Support Multiple Platforms[/]"))
-                        .AddColumn(new TableColumn("[u]Score[/]"))
-                        .AddColumn(new TableColumn("[u]Total Score[/]"));
+                    var supportsMultiplePlatformsTable = new Table();
+                    supportsMultiplePlatformsTable
+                        .Collapse()
+                        .Border(TableBorder.Rounded)
+                        .AddColumn(new TableColumn("[u]Supports Multiple Platforms[/]").Footer("[bold u].NET Score[/]"))
+                        .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.SupportsMultiplePlatforms.Sum(x => x.CurrentScore)}[/]"))
+                        .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.SupportsMultiplePlatforms.Sum(x => x.MaxScore)}[/]"));
 
                     if (score?.ScoreReport != null)
                     {
                         foreach (var scoreSection in score.ScoreReport?.SupportsMultiplePlatforms)
                         {
                             //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                            var scoreSectionTree = new Tree(new Markup(scoreSection.Title));
+                            var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
 
                             if (scoreSection.Summaries != null)
                                 foreach (var scoreSectionSummary in scoreSection?.Summaries)
@@ -118,12 +118,13 @@ namespace Score.Utilities
                                         $"[red]{scoreSectionSummary.Resolution}[/]");
                                 }
 
-                            supportMultiplePlatformsTable
+                            supportsMultiplePlatformsTable
                                 .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
                                     new Markup($"[bold]{scoreSection.MaxScore}[/]"));
                         }
 
-                        AnsiConsole.Render(supportMultiplePlatformsTable);
+                        AnsiConsole.Render(supportsMultiplePlatformsTable);
+                    
 
                         var passStaticAnalysisTable = new Table();
                         passStaticAnalysisTable

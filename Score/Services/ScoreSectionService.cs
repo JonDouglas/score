@@ -6,6 +6,8 @@ using Score.Models;
 using Score.Validations;
 using Score.Validations.NuGetConventions;
 using Score.Validations.ProvidesDocumentation;
+using Score.Validations.SupportsMultiplePlatforms;
+using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace Score.Services
 {
@@ -65,13 +67,10 @@ namespace Score.Services
         public async Task<ScoreSection> GetApiDocumentationScoreSectionAsync(PackageContext context)
         {
             List<Summary> summaries = new List<Summary>();
-            List<FluentValidation.Results.ValidationResult> validationResults = new List<FluentValidation.Results.ValidationResult>();
-            foreach (var framework in context.NuGetFrameworkDocumentationList)
+            foreach (var nugetFramework in context.NuGetFrameworkDocumentationList)
             {
                 var validator = new ApiDocumentationValidator();
-                var results = await validator.ValidateAsync(framework);
-                validationResults.Add(results);
-                //Start to score the nuspec vs. the results.
+                var results = await validator.ValidateAsync(nugetFramework);
                 foreach (var failure in results.Errors)
                 {
                     Summary summary = new Summary()
@@ -83,26 +82,50 @@ namespace Score.Services
                 }
             }
 
-            int score = 0;
-            bool status;
-
-            if (validationResults.Any(x => x.Errors.Any()))
-            {
-                score = 0;
-                status = false;
-            }
-            else
-            {
-                score = 10;
-                status = true;
-            }
-
             return new ScoreSection()
             {
                 Title = "Public API has XML Documentation",
                 MaxScore = 10,
-                CurrentScore = score,
-                Status = false,
+                CurrentScore = summaries.Count > 0 ? 0 : 10,
+                Status = true,
+                Summaries = summaries
+            };
+            
+        }
+        
+        public async Task<ScoreSection> GetMultiplePlatformsScoreSectionAsync(PackageContext context)
+        {
+            List<Summary> summaries = new List<Summary>();
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            foreach (var platform in context.NuGetFrameworkDocumentationList)
+            {
+                if (platform.NuGetFramework.GetShortFolderName() == "net5.0" ||
+                    platform.NuGetFramework.GetShortFolderName() == "netstandard2.0")
+                {
+                    var validator = new MultiplePlatformsValidator();
+                    var results = await validator.ValidateAsync(platform.NuGetFramework);
+                    //Start to score the nuspec vs. the results.
+                    foreach (var failure in results.Errors)
+                    {
+                        Summary summary = new Summary()
+                        {
+                            Issue = failure.PropertyName,
+                            Resolution = failure.ErrorMessage
+                        };
+                        summaries.Add(summary);
+                    }
+                    validationResults.Add(results);
+                }
+                
+            }
+            
+            
+            return new ScoreSection()
+            {
+                Title = "Target the most compatible & most functional frameworks (netstandard2.0 & net5.0).",
+                MaxScore = 20,
+                CurrentScore = validationResults.Count > 0 ? validationResults.Count * 10 : 0,
+                Status = true,
                 Summaries = summaries
             };
         }
