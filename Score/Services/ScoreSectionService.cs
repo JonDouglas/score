@@ -97,6 +97,18 @@ namespace Score.Services
         {
             List<Summary> summaries = new List<Summary>();
             List<ValidationResult> validationResults = new List<ValidationResult>();
+            bool isLatest = false;
+            bool isCompatible = false;
+            if(context.NuGetFrameworkDocumentationList.Any(x => x.NuGetFramework.GetShortFolderName() == "net5.0"))
+            {
+                isLatest = true;
+            }
+
+            if (context.NuGetFrameworkDocumentationList.Any(x =>
+                x.NuGetFramework.GetShortFolderName() == "netstandard2.0"))
+            {
+                isCompatible = true;
+            }
             foreach (var platform in context.NuGetFrameworkDocumentationList)
             {
                 if (platform.NuGetFramework.GetShortFolderName() == "net5.0" ||
@@ -104,25 +116,43 @@ namespace Score.Services
                 {
                     var validator = new MultiplePlatformsValidator();
                     var results = await validator.ValidateAsync(platform.NuGetFramework);
-                    //Start to score the nuspec vs. the results.
-                    foreach (var failure in results.Errors)
-                    {
-                        Summary summary = new Summary()
-                        {
-                            Issue = failure.PropertyName,
-                            Resolution = failure.ErrorMessage
-                        };
-                        summaries.Add(summary);
-                    }
+
                     validationResults.Add(results);
                 }
-                
             }
+            
+            Summary summary = new Summary();
+            if (isCompatible && isLatest)
+            {
+                summary = new Summary()
+                {
+                    Issue = "Target the most compatible & latest target frameworks",
+                    Resolution = "Multi-target your library for both 'netstandard2.0' and 'net5.0'"
+                };
+            }
+            else if (isCompatible)
+            {
+                summary = new Summary()
+                {
+                    Issue = "Target the latest target framework",
+                    Resolution = "Multi-target your library for 'net5.0'"
+                };
+            }
+            else if (isLatest)
+            {
+                summary = new Summary()
+                {
+                    Issue = "Target the most compatible target framework",
+                    Resolution = "Multi-target your library for 'netstandard2.0'"
+                };
+            }
+
+            summaries.Add(summary);
             
             
             return new ScoreSection()
             {
-                Title = "Target the most compatible & most functional frameworks (netstandard2.0 & net5.0).",
+                Title = "Target the most compatible & latest frameworks.",
                 MaxScore = 20,
                 CurrentScore = validationResults.Count > 0 ? validationResults.Count * 10 : 0,
                 Status = true,
