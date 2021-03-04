@@ -19,7 +19,7 @@ namespace Score.Services
 {
     public class NuGetService
     {
-        public async Task<NuGetVersion> GetLatestNuGetVersion(PackageContext context)
+        public async Task<NuGetVersion> GetLatestNuGetVersion(string id, NuGetVersion version)
         {
             var logger = NullLogger.Instance;
             var cancellationToken = CancellationToken.None;
@@ -29,15 +29,43 @@ namespace Score.Services
             var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
 
             var versions = await resource.GetAllVersionsAsync(
-                context.PackageName,
+                id,
                 cache,
                 logger,
                 cancellationToken);
 
-            var nuGetVersions = versions.ToList();
-            foreach (var version in nuGetVersions) Console.WriteLine($"Found version {version}");
+            var nuGetVersions = versions.Where(x => !x.IsPrerelease).ToList();
 
             return nuGetVersions.LastOrDefault();
+        }
+        
+        public async Task<bool> IsLatestNuGetVersion(string id, NuGetVersion version)
+        {
+            var logger = NullLogger.Instance;
+            var cancellationToken = CancellationToken.None;
+
+            var cache = new SourceCacheContext();
+            var repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+
+            var versions = await resource.GetAllVersionsAsync(
+                id,
+                cache,
+                logger,
+                cancellationToken);
+
+            var nuGetVersions = versions.Where(x => !x.IsPrerelease).ToList();
+
+            var latestVersion = nuGetVersions.LastOrDefault();
+
+            if (latestVersion > version)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         public async Task<NuspecReader> DownloadNuGetPackage(ScoreSettings settings, NuGetVersion version)

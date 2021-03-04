@@ -119,15 +119,36 @@ namespace Score.Services
         {
             //Code has no errors, warnings, lints, or formatting issues. 30 score
             //Code does all the health checks for assemblies.
-            return new();
+            
+            foreach (var target in context.PackageArchiveReader.GetLibItems())
+            {
+                var assemblyStringPath = context.PackageArchiveReader.GetFiles().Where(x => x.Contains(target.TargetFramework.GetShortFolderName())).Where(x => x.EndsWith(".dll")).FirstOrDefault();
+                if (assemblyStringPath != null)
+                {
+                    await using var assemblyStream = context.PackageArchiveReader.GetStream(assemblyStringPath);
+
+                    await using (var assemblyMemoryStream = new MemoryStream())
+                    {
+                        await assemblyStream.CopyToAsync(assemblyMemoryStream);
+                        assemblyMemoryStream.Position = 0;
+                        AssemblyDefinition ad = AssemblyDefinition.ReadAssembly(assemblyMemoryStream);
+                        var t = ad.MainModule.HasSymbols;
+                    }
+                }
+
+            }
+            
+            var scoreSectionService = new ScoreSectionService();
+            var passStaticAnalysisScoreSection = await scoreSectionService.GetStaticAnalysisScoreSectionAsync(context);
+            return new List<ScoreSection> { passStaticAnalysisScoreSection };
         }
 
         private async Task<List<ScoreSection>> SupportUpToDateDependenciesAsync(PackageContext context)
         {
-            //All package dependencies are supported in the latest version. 10 score
-
             //Package supports latest .NET SDKs. 10 score
-            return new();
+            var scoreSectionService = new ScoreSectionService();
+            var passStaticAnalysisScoreSection = await scoreSectionService.GetUpToDateDependenciesScoreSectionAsync(context);
+            return new List<ScoreSection> { passStaticAnalysisScoreSection };
         }
     }
 }

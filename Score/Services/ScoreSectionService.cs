@@ -99,6 +99,7 @@ namespace Score.Services
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isLatest = false;
             bool isCompatible = false;
+            
             if(context.NuGetFrameworkDocumentationList.Any(x => x.NuGetFramework.GetShortFolderName() == "net5.0"))
             {
                 isLatest = true;
@@ -122,7 +123,7 @@ namespace Score.Services
             }
             
             Summary summary = new Summary();
-            if (isCompatible && isLatest)
+            if (!isCompatible && !isLatest)
             {
                 summary = new Summary()
                 {
@@ -130,7 +131,7 @@ namespace Score.Services
                     Resolution = "Multi-target your library for both 'netstandard2.0' and 'net5.0'"
                 };
             }
-            else if (isCompatible)
+            else if (isCompatible && !isLatest)
             {
                 summary = new Summary()
                 {
@@ -138,7 +139,7 @@ namespace Score.Services
                     Resolution = "Multi-target your library for 'net5.0'"
                 };
             }
-            else if (isLatest)
+            else if (isLatest && !isCompatible)
             {
                 summary = new Summary()
                 {
@@ -155,6 +156,50 @@ namespace Score.Services
                 Title = "Target the most compatible & latest frameworks.",
                 MaxScore = 20,
                 CurrentScore = validationResults.Count > 0 ? validationResults.Count * 10 : 0,
+                Status = true,
+                Summaries = summaries
+            };
+        }
+
+        public async Task<ScoreSection> GetStaticAnalysisScoreSectionAsync(PackageContext context)
+        {
+            return new ScoreSection();
+        }
+        
+        public async Task<ScoreSection> GetUpToDateDependenciesScoreSectionAsync(PackageContext context)
+        {
+            //All package dependencies are supported in the latest version. 10 score
+            //Let's do either all dependencies are updated fully or no points.
+            NuGetService nuGetService = new NuGetService();
+            var packageDependencies = context.PackageMetadata.DependencySets;
+            List<bool> updatedPackages = new List<bool>();
+            List<Summary> summaries = new List<Summary>();
+            foreach (var dependency in packageDependencies)
+            {
+                foreach (var package in dependency.Packages)
+                {
+                    var latestVersion =
+                        await nuGetService.GetLatestNuGetVersion(package.Id, package.VersionRange.MinVersion);
+                    var result = await nuGetService.IsLatestNuGetVersion(package.Id, package.VersionRange.MinVersion);
+                    if (!result)
+                    {
+                        updatedPackages.Add(result);
+                        Summary summary = new Summary()
+                        {
+                            Issue = $"{dependency.TargetFramework.GetShortFolderName() + "/" + package.Id} is not the latest version ({package.VersionRange.MinVersion}).",
+                            Resolution = $"Update {dependency.TargetFramework.GetShortFolderName() + "/" + package.Id} to the latest stable version ({latestVersion})."
+                        };
+                        summaries.Add(summary);
+                        //create a summary if the package is not up to date.
+                        //Microsoft.Csharp is version 4.3.0, update to 4.7.0
+                    }
+                }
+            }
+            return new ScoreSection()
+            {
+                Title = "Has up-to-date dependencies",
+                MaxScore = 10,
+                CurrentScore = updatedPackages.Count > 0 ? 0 : 10,
                 Status = true,
                 Summaries = summaries
             };
