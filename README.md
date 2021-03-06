@@ -1,3 +1,4 @@
+![](Resources/logo.png)
 # score
 A tool that scores your NuGet packages & gives you suggestions to improve them.
 
@@ -30,7 +31,7 @@ OPTIONS:
 score Autofac 6.1.0
 ```
 
-![](Examples/score.png)
+![](Resources/score.png)
 
 ## Why
 Scores are created based on the following categories:
