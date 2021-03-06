@@ -34,7 +34,7 @@ score Autofac 6.1.0
 ![](Resources/score.png)
 
 ## Why
-Scores are created based on the following categories:
+Scores are created based on the following categories([heavily inspired by pana](https://pub.dev/packages/pana)):
 
 - [Following NuGet Conventions](#following-nuget-conventions)
 - [Providing Documentation](#providing-documentation)
