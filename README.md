@@ -1,6 +1,8 @@
 # score
 A tool that scores your NuGet packages & gives you suggestions to improve them.
 
+**_This tool is under active development & results should be taken with a grain of salt._**
+
 ## Installation
 ```
 > dotnet tool install --global score
@@ -82,7 +84,10 @@ This tool does it's best job to provide many of the best practices of authoring 
 - [NuGet Library Guidance](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/nuget)
 - [Package Authoring Best Practices](https://docs.microsoft.com/nuget/create-packages/package-authoring-best-practices)
 
+## Contribute!
+Please feel free to test this tool against any package & report any [issues](https://github.com/JonDouglas/score/issues)! This tool is a proof of concept & likely doesn't support every case. It's goal is to work against NuGet package `Dependency` types, but NuGet hosts more than just dependencies, so you can also try running this tool against `Template` and `DotNetTool` packages as well to see what happens! 
 
+**Any compelling package best practice check will be considered & PRs are gladly accepted!**
 
 
 
