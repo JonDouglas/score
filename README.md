@@ -46,7 +46,8 @@ Scores are created based on the following categories([heavily inspired by pana](
 ## Following NuGet Conventions
 NuGet packages are expected to follow certain file layouts when organizing a package. Most importantly make sure you:
 
-- Provide a valid .nuspec or project properties. Ensure all Urls are valid and use https.
+- Provide a valid .nuspec or project properties. 
+    - Ensure all Urls are valid and use https. (TODO)
 - Provide a valid LICENSE. Preferably a permissive open source license.
 - Provide a README.md. (Upcoming)
 - Provide a RELEASENOTES/CHANGELOG.md (Upcoming)
@@ -68,7 +69,7 @@ score checks for two portable frameworks to ensure packages are both compatible 
 For more information on .NET 5 and .NET Standard, see the [following docs](https://docs.microsoft.com/dotnet/standard/net-standard#when-to-target-net50-vs-netstandard).
 
 ## Passing Static Analysis
-Packages go through a static analysis tool to determine if the package has any major health or security issues. These checks help ensure you are using the latest tooling to secure your software supply chain such as reproducible builds, compiler flags, and much more. (TODO)
+Packages go through a static analysis tool to determine if the package has any major health or security issues. These checks help ensure you are using the latest tooling to secure your software supply chain such as reproducible builds, compiler flags, source link, and much more. (TODO)
 
 **This section is not implemented.**
 
