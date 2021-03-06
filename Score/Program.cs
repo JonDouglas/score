@@ -9,12 +9,12 @@ namespace Score
         public static async Task<int> Main(string[] args)
         {
             var app = new CommandApp();
+            app.SetDefaultCommand<ScoreCommand>();
             app.Configure(config =>
             {
-                config.SetApplicationName("dotnet-score");
+                config.SetApplicationName("score");
                 config.ValidateExamples();
-                config.AddExample(new[] {"score", "<PACKAGE_NAME>"});
-                config.AddCommand<ScoreCommand>("score");
+                config.AddExample(new[] {"<PACKAGE_NAME>", "<VERSION>"});
             });
 
             return await app.RunAsync(args);

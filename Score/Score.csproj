@@ -4,11 +4,16 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>snitch</ToolCommandName>
+        <ToolCommandName>score</ToolCommandName>
+        <AssemblyVersion>0.3.0</AssemblyVersion>
+        <PackageId>score</PackageId>
+        <PackageVersion>0.3.0</PackageVersion>
+        <Title>dotnet score</Title>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 
     <PropertyGroup>
-      <Description>A tool that help you score a NuGet package.</Description>
+      <Description>A tool that helps you score a NuGet package.</Description>
       <Company>Jon Douglas</Company>
       <Copyright>Jon Douglas</Copyright>
       <Authors>Jon Douglas</Authors>
@@ -23,6 +28,7 @@
       <PackageReference Include="NuGet.Protocol" Version="5.8.1" />
       <PackageReference Include="NuGet.Versioning" Version="5.8.1" />
       <PackageReference Include="Spectre.Console" Version="0.37.0" />
+      <None Include="Images\icon.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>

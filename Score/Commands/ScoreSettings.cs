@@ -10,7 +10,7 @@ namespace Score.Commands
         public string PackageName { get; set; }
 
         [CommandArgument(1, "<VERSION>")]
-        [Description("The version of the package to add.")]
+        [Description("The version of the package to score.")]
         public string PackageVersion { get; set; }
     }
 }
