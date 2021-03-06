@@ -8,6 +8,7 @@ A tool that scores your NuGet packages & gives you suggestions to improve them.
 ```
 > dotnet tool install --global score
 ```
+_[![Nuget](https://img.shields.io/nuget/v/score)](https://www.nuget.org/packages/score/)_
 
 ## Usage
 *Examine a specific package.*
