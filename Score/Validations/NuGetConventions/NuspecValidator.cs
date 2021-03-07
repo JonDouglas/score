@@ -29,7 +29,7 @@ namespace Score.Validations.NuGetConventions
             
             RuleFor(x => x.NuspecReader.GetOwners()).Empty()
                 .WithName("<owners> is deprecated. Use <authors> instead.")
-                .WithMessage("The <owners> element is not recognized by NuGet.org. Owners are typically managed by in package source instead of in package metadata.");
+                .WithMessage("The <owners> element is not recognized by NuGet.org. Owners are typically managed in the package source instead of in the .nuspec.");
 
             RuleFor(x => x.NuspecReader.GetCopyright()).NotEmpty()
                 .WithName("<copyright> is missing.")
