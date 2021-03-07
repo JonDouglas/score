@@ -27,9 +27,10 @@ namespace Score.Validations.NuGetConventions
                 .WithName("<repository> is missing")
                 .WithMessage("Add a <repository> to your package.");
             
-            RuleFor(x => x.NuspecReader.GetOwners()).NotEmpty()
-                .WithName("<owners> is missing.")
-                .WithMessage("Add <owners> to your .nuspec");
+            RuleFor(x => x.NuspecReader.GetOwners()).Empty()
+                .WithName("<owners> is deprecated. Use <authors> instead.")
+                .WithMessage("The <owners> element is not recognized by NuGet.org. Owners are typically managed by in package source instead of in package metadata.");
+
             RuleFor(x => x.NuspecReader.GetCopyright()).NotEmpty()
                 .WithName("<copyright> is missing.")
                 .WithMessage("Add <copyright> to your .nuspec");
