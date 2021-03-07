@@ -1,5 +1,5 @@
-![](Resources/logo.png)
-# score
+# <img src='Resources/logo.png' height='30px'> score
+
 A tool that scores your NuGet packages & gives you suggestions to improve them.
 
 **_This tool is under active development & results should be taken with a grain of salt._**
