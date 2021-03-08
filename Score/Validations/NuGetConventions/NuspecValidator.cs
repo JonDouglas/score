@@ -41,11 +41,14 @@ namespace Score.Validations.NuGetConventions
                 .WithName("<description> is too short")
                 .WithMessage("Add more detail to the description field of .nuspec. Use 60 to 180 characters" +
                              " to describe the package, what it does, and its target use case.");
-
-            RuleFor(x => x.NuspecReader.GetIcon()).NotEmpty().WithName("<icon> is missing.").WithMessage("Add an icon to your package and reference it within an <icon> element.");
-   
-            RuleFor(x => x.NuspecReader.GetIconUrl()).NotEmpty().WithName("<iconUrl> is deprecated. Use <icon> instead.").WithMessage("Add an icon to your package and reference it within an <icon> element.");
-
+            
+            When(x => x.NuspecReader.GetIcon() != null || x.NuspecReader.GetIcon() == null, () =>
+            {
+                RuleFor(x => x.NuspecReader.GetIcon()).NotEmpty().WithName("<icon> is missing.").WithMessage("Add an icon to your package and reference it within an <icon> element.");
+            }).Otherwise(() =>
+            {
+                RuleFor(x => x.NuspecReader.GetIconUrl()).NotEmpty().WithName("<iconUrl> is deprecated. Use <icon> instead.").WithMessage("Add an icon to your package and reference it within an <icon> element.");
+            });
 
             RuleFor(x => x.NuspecReader.GetTags()).NotEmpty().WithName("<tags> is missing.").WithMessage("Add tags to the <tags> element to describe your package");
         }
