@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Score;
 using Score.Commands;
 using Score.Models;
 using Score.Services;
@@ -24,6 +25,15 @@ public class Tests
 
         AnsiConsole.Record();
         ScoreDumper.DumpScore(score);
+
+        await Verifier.Verify(AnsiConsole.ExportText());
+    }
+
+    [Fact]
+    public async Task Usage()
+    {
+        AnsiConsole.Record();
+        await Program.Main(new[]{"-h"});
 
         await Verifier.Verify(AnsiConsole.ExportText());
     }

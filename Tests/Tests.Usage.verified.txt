@@ -1,0 +1,13 @@
+USAGE:
+    score <PACKAGE_NAME> <VERSION> [OPTIONS]
+
+EXAMPLES:
+    score <PACKAGE_NAME> <VERSION>
+
+ARGUMENTS:
+    <PACKAGE_NAME>    The package name to score          
+    <VERSION>         The version of the package to score
+                                                         
+OPTIONS:
+    -h, --help    Prints help information
+                                         

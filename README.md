@@ -12,20 +12,26 @@ _[![Nuget](https://img.shields.io/nuget/v/score)](https://www.nuget.org/packages
 
 ## Usage
 *Examine a specific package.*
-```
-> USAGE:
+
+<!-- snippet: Tests.Usage.verified.txt -->
+<a id='snippet-Tests.Usage.verified.txt'></a>
+```txt
+USAGE:
     score <PACKAGE_NAME> <VERSION> [OPTIONS]
 
 EXAMPLES:
     score <PACKAGE_NAME> <VERSION>
 
 ARGUMENTS:
-    <PACKAGE_NAME>    The package name to score
+    <PACKAGE_NAME>    The package name to score          
     <VERSION>         The version of the package to score
-
+                                                         
 OPTIONS:
     -h, --help    Prints help information
+                                         
 ```
+<sup><a href='/Tests/Tests.Usage.verified.txt#L1-L13' title='Snippet source file'>snippet source</a> | <a href='#snippet-Tests.Usage.verified.txt' title='Start of snippet'>anchor</a></sup>
+<!-- endSnippet -->
 
 ## Example
 ```
