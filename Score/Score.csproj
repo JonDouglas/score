@@ -28,6 +28,7 @@
       <PackageReference Include="NuGet.Protocol" Version="5.8.1" />
       <PackageReference Include="NuGet.Versioning" Version="5.8.1" />
       <PackageReference Include="Spectre.Console" Version="0.37.0" />
+      <PackageReference Include="System.Reflection.MetadataLoadContext" Version="5.0.0" />
       <None Include="Images\icon.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 

@@ -9,5 +9,6 @@ namespace Score.Models
         public List<ScoreSection> SupportsMultiplePlatforms { get; set; }
         public List<ScoreSection> PassStaticAnalysis { get; set; }
         public List<ScoreSection> SupportUpToDateDependencies { get; set; }
+        public List<ScoreSection> OptimizedLibraries { get; set; }
     }
 }

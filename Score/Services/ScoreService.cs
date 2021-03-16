@@ -23,7 +23,8 @@ namespace Score.Services
                 ProvidesDocumentation = await ProvidesDocumentationAsync(context),
                 PassStaticAnalysis = await PassStaticAnalysisAsync(context),
                 SupportsMultiplePlatforms = await SupportsMultiplePlatformsAsync(context),
-                SupportUpToDateDependencies = await SupportUpToDateDependenciesAsync(context)
+                SupportUpToDateDependencies = await SupportUpToDateDependenciesAsync(context),
+                OptimizedLibraries = await ShipsOptimizedLibrariesAsync(context)
             };
 
             return score;
@@ -148,6 +149,14 @@ namespace Score.Services
             //Package supports latest .NET SDKs. 10 score
             var scoreSectionService = new ScoreSectionService();
             var passStaticAnalysisScoreSection = await scoreSectionService.GetUpToDateDependenciesScoreSectionAsync(context);
+            return new List<ScoreSection> { passStaticAnalysisScoreSection };
+        }
+
+        private async Task<List<ScoreSection>> ShipsOptimizedLibrariesAsync(PackageContext context)
+        {
+            // .NET libraries carried by the package were built with optimizations enabled.
+            var scoreSectionService = new ScoreSectionService();
+            var passStaticAnalysisScoreSection = await scoreSectionService.GetOptimizedLibrariesAsync(context);
             return new List<ScoreSection> { passStaticAnalysisScoreSection };
         }
     }

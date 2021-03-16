@@ -1,6 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Score.Models;
 using Score.Validations;
@@ -63,7 +68,7 @@ namespace Score.Services
                 Summaries = summaries
             };
         }
-        
+
         public async Task<ScoreSection> GetApiDocumentationScoreSectionAsync(PackageContext context)
         {
             List<Summary> summaries = new List<Summary>();
@@ -90,16 +95,16 @@ namespace Score.Services
                 Status = true,
                 Summaries = summaries
             };
-            
+
         }
-        
+
         public async Task<ScoreSection> GetMultiplePlatformsScoreSectionAsync(PackageContext context)
         {
             List<Summary> summaries = new List<Summary>();
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isLatest = false;
             bool isCompatible = false;
-            
+
             if(context.NuGetFrameworkDocumentationList.Any(x => x.NuGetFramework.GetShortFolderName() == "net5.0"))
             {
                 isLatest = true;
@@ -121,7 +126,7 @@ namespace Score.Services
                     validationResults.Add(results);
                 }
             }
-            
+
             Summary summary = new Summary();
             if (!isCompatible && !isLatest)
             {
@@ -149,8 +154,8 @@ namespace Score.Services
             }
 
             summaries.Add(summary);
-            
-            
+
+
             return new ScoreSection()
             {
                 Title = "Target the most compatible & latest frameworks.",
@@ -165,7 +170,7 @@ namespace Score.Services
         {
             return new ScoreSection();
         }
-        
+
         public async Task<ScoreSection> GetUpToDateDependenciesScoreSectionAsync(PackageContext context)
         {
             //All package dependencies are supported in the latest version. 10 score
@@ -200,6 +205,76 @@ namespace Score.Services
                 Title = "Has up-to-date dependencies",
                 MaxScore = 10,
                 CurrentScore = updatedPackages.Count > 0 ? 0 : 10,
+                Status = true,
+                Summaries = summaries
+            };
+        }
+
+        public async Task<ScoreSection> GetOptimizedLibrariesAsync(PackageContext context)
+        {
+            NuGetService nuGetService = new NuGetService();
+            var libraries = await context.PackageArchiveReader.GetLibItemsAsync(default);
+            var coreAsm = typeof(object).Assembly;
+            var dir = Path.GetDirectoryName(coreAsm.Location);
+            string[] runtimeAssemblies = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
+            var par = new PathAssemblyResolver(runtimeAssemblies);
+
+            List<string> debugLibraries = new List<string>();
+            List<Summary> summaries = new List<Summary>();
+            foreach (var lib in libraries)
+            {
+                var dlls = lib.Items.Where(f => StringComparer.OrdinalIgnoreCase.Equals(Path.GetExtension(f), ".dll"));
+                foreach (var dll in dlls)
+                {
+                    using var mlc = new MetadataLoadContext(par, coreAsm.FullName);
+                    using Stream dllStream = context.PackageArchiveReader.GetStream(dll);
+                    using var ms = new MemoryStream();
+                    await dllStream.CopyToAsync(ms);
+
+                    var asm = mlc.LoadFromStream(ms);
+
+                    var cads = asm.GetCustomAttributesData();
+                    bool isOptimized = true;
+                    foreach (var cad in cads)
+                    {
+                        var name = cad.AttributeType.FullName;
+                        if (name == typeof(DebuggableAttribute).FullName)
+                        {
+                            var args = cad.ConstructorArguments;
+                            switch (args.Count)
+                            {
+                                case 1:
+                                    var val = (int)args[0].Value;
+                                    isOptimized = (val & 0x100) == 0;
+                                    break;
+                                case 2:
+                                    isOptimized = (bool)args[1].Value == false;
+                                    break;
+                                default:
+                                    // who knows
+                                    break;
+                            }
+                            break;
+                        }
+                    }
+                    if (!isOptimized)
+                    {
+                        debugLibraries.Add(dll);
+                        var summary = new Summary()
+                        {
+                            Issue = $"Assembly {dll} is not built with optimizations enabled.",
+                            Resolution = "Build with optimizations enabled, ie 'release' build."
+                        };
+                        summaries.Add(summary);
+                    }
+                }
+            }
+
+            return new ScoreSection()
+            {
+                Title = "Has optimized libraries",
+                MaxScore = 10,
+                CurrentScore = debugLibraries.Count > 0 ? 0 : 10,
                 Status = true,
                 Summaries = summaries
             };
