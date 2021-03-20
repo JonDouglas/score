@@ -272,7 +272,7 @@ namespace Score.Services
 
             return new ScoreSection()
             {
-                Title = "Has optimized libraries",
+                Title = "Libraries have JIT optimization enabled.",
                 MaxScore = 10,
                 CurrentScore = debugLibraries.Count > 0 ? 0 : 10,
                 Status = true,

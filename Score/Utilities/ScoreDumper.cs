@@ -1,7 +1,8 @@
-using System.Linq;
+using Score.Models;
 using Spectre.Console;
-using Spectre.Console.Rendering;
 using Spectre.Console.Cli;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Score.Utilities
 {
@@ -28,192 +29,61 @@ namespace Score.Utilities
             AnsiConsole.Render(table);
         }
 
+        static Table CreateTable(string title, List<ScoreSection> sections)
+        {
+            var table = new Table();
+            table
+                .Collapse()
+                .Border(TableBorder.Rounded)
+                .AddColumn(new TableColumn("[u]" + title + "[/]").Footer("[bold u].NET Score[/]"))
+                .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{sections.Sum(x => x.CurrentScore)}[/]"))
+                .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{sections.Sum(x => x.MaxScore)}[/]"));
+
+            foreach (var scoreSection in sections)
+            {
+                //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
+                var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
+
+                if (scoreSection.Summaries != null)
+                    foreach (var scoreSectionSummary in scoreSection?.Summaries)
+                    {
+                        var issueNode = scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
+                        issueNode.AddNode(
+                            $"[red]{scoreSectionSummary.Resolution}[/]");
+                    }
+
+                table
+                    .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
+                        new Markup($"[bold]{scoreSection.MaxScore}[/]"));
+            }
+
+            return table;
+        }
 
         public static void DumpScore(Models.Score score)
         {
+            if (score?.ScoreReport == null)
+                return;
+
             AnsiConsole.Render(new FigletText(".NET SCORE").Centered().Color(Color.Purple));
             //Score -> ScoreReport -> 5 List<ScoreSections> (Iterate) -> ScoreSection (Tree & Nodes & Table)
-            var nugetConventionsTable = new Table();
-            nugetConventionsTable
-                .Collapse()
-                .Border(TableBorder.Rounded)
-                .AddColumn(new TableColumn("[u]Follows NuGet Conventions[/]").Footer("[bold u].NET Score[/]"))
-                .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.CurrentScore)}[/]"))
-                .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.FollowsNuGetConventions.Sum(x => x.MaxScore)}[/]"));
 
-            if (score?.ScoreReport != null)
-            {
-                foreach (var scoreSection in score.ScoreReport?.FollowsNuGetConventions)
-                {
-                    //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                    var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
+            var nugetConventionsTable = CreateTable("Follows NuGet Conventions", score.ScoreReport.FollowsNuGetConventions);
+            AnsiConsole.Render(nugetConventionsTable);
 
-                    if (scoreSection.Summaries != null)
-                        foreach (var scoreSectionSummary in scoreSection?.Summaries)
-                        {
-                            var issueNode = scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
-                            issueNode.AddNode(
-                                $"[red]{scoreSectionSummary.Resolution}[/]");
-                        }
+            //Add a BreakdownChart() when 1.0.0 is released in Spectre.Console.
 
-                    nugetConventionsTable
-                        .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
-                            new Markup($"[bold]{scoreSection.MaxScore}[/]"));
-                }
+            var providesDocumentationTable = CreateTable("Provides Documentation", score.ScoreReport.ProvidesDocumentation);
+            AnsiConsole.Render(providesDocumentationTable);
 
-                AnsiConsole.Render(nugetConventionsTable);
+            var supportsMultiplePlatformsTable = CreateTable("Supports Multiple Platforms", score.ScoreReport.SupportsMultiplePlatforms);
+            AnsiConsole.Render(supportsMultiplePlatformsTable);
 
-                //Add a BreakdownChart() when 1.0.0 is released in Spectre.Console.
+            var passStaticAnalysisTable = CreateTable("Pass Static Analysis", score.ScoreReport.PassStaticAnalysis);
+            AnsiConsole.Render(passStaticAnalysisTable);
 
-                var providesDocumentationTable = new Table();
-                providesDocumentationTable
-                    .Collapse()
-                    .Border(TableBorder.Rounded)
-                    .AddColumn(new TableColumn("[u]Provides Documentation[/]").Footer("[bold u].NET Score[/]"))
-                    .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.ProvidesDocumentation.Sum(x => x.CurrentScore)}[/]"))
-                    .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.ProvidesDocumentation.Sum(x => x.MaxScore)}[/]"));
-
-
-                foreach (var scoreSection in score.ScoreReport?.ProvidesDocumentation)
-                {
-                    //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                    var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
-
-                    if (scoreSection.Summaries != null)
-                        foreach (var scoreSectionSummary in scoreSection?.Summaries)
-                        {
-                            var issueNode = scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
-                            issueNode.AddNode(
-                                $"[red]{scoreSectionSummary.Resolution}[/]");
-                        }
-
-                    providesDocumentationTable
-                        .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
-                            new Markup($"[bold]{scoreSection.MaxScore}[/]"));
-                }
-
-                AnsiConsole.Render(providesDocumentationTable);
-
-                var supportsMultiplePlatformsTable = new Table();
-                supportsMultiplePlatformsTable
-                    .Collapse()
-                    .Border(TableBorder.Rounded)
-                    .AddColumn(new TableColumn("[u]Supports Multiple Platforms[/]").Footer("[bold u].NET Score[/]"))
-                    .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.SupportsMultiplePlatforms.Sum(x => x.CurrentScore)}[/]"))
-                    .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.SupportsMultiplePlatforms.Sum(x => x.MaxScore)}[/]"));
-
-
-                foreach (var scoreSection in score.ScoreReport?.SupportsMultiplePlatforms)
-                {
-                    //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                    var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
-
-                    if (scoreSection.Summaries != null)
-                        foreach (var scoreSectionSummary in scoreSection?.Summaries)
-                        {
-                            var issueNode = scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
-                            issueNode.AddNode(
-                                $"[red]{scoreSectionSummary.Resolution}[/]");
-                        }
-
-                    supportsMultiplePlatformsTable
-                        .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
-                            new Markup($"[bold]{scoreSection.MaxScore}[/]"));
-                }
-
-                AnsiConsole.Render(supportsMultiplePlatformsTable);
-
-
-                // var passStaticAnalysisTable = new Table();
-                // passStaticAnalysisTable
-                //     .Expand()
-                //     .Border(TableBorder.Minimal)
-                //     .AddColumn(new TableColumn("[u]Pass Static Analysis[/]"))
-                //     .AddColumn(new TableColumn("[u]Score[/]"))
-                //     .AddColumn(new TableColumn("[u]Total Score[/]"));
-                //
-                // if (score?.ScoreReport != null)
-                // {
-                //     foreach (var scoreSection in score.ScoreReport?.PassStaticAnalysis)
-                //     {
-                //         //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                //         var scoreSectionTree = new Tree(new Markup(scoreSection.Title));
-                //
-                //         if (scoreSection.Summaries != null)
-                //             foreach (var scoreSectionSummary in scoreSection?.Summaries)
-                //             {
-                //                 var issueNode =
-                //                     scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
-                //                 issueNode.AddNode(
-                //                     $"[red]{scoreSectionSummary.Resolution}[/]");
-                //             }
-                //
-                //         passStaticAnalysisTable
-                //             .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
-                //                 new Markup($"[bold]{scoreSection.MaxScore}[/]"));
-                //     }
-                //
-                //     AnsiConsole.Render(passStaticAnalysisTable);
-
-                var upToDateDependenciesTable = new Table();
-                upToDateDependenciesTable
-                    .Collapse()
-                    .Border(TableBorder.Rounded)
-                    .AddColumn(new TableColumn("[u]Up-to-date Dependencies[/]").Footer("[bold u].NET Score[/]"))
-                    .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.SupportUpToDateDependencies.Sum(x => x.CurrentScore)}[/]"))
-                    .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.SupportUpToDateDependencies.Sum(x => x.MaxScore)}[/]"));
-
-
-                foreach (var scoreSection in score.ScoreReport?.SupportUpToDateDependencies)
-                {
-                    //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                    var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
-
-                    if (scoreSection.Summaries != null)
-                        foreach (var scoreSectionSummary in scoreSection?.Summaries)
-                        {
-                            var issueNode = scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
-                            issueNode.AddNode(
-                                $"[red]{scoreSectionSummary.Resolution}[/]");
-                        }
-
-                    upToDateDependenciesTable
-                        .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
-                            new Markup($"[bold]{scoreSection.MaxScore}[/]"));
-                }
-
-                AnsiConsole.Render(upToDateDependenciesTable);
-
-
-                var optimizedAssembliesTable = new Table();
-                optimizedAssembliesTable
-                    .Collapse()
-                    .Border(TableBorder.Rounded)
-                    .AddColumn(new TableColumn("[u]Optimized assemblies[/]").Footer("[bold u].NET Score[/]"))
-                    .AddColumn(new TableColumn("[u]Score[/]").Footer($"[bold u]{score.ScoreReport.OptimizedLibraries.Sum(x => x.CurrentScore)}[/]"))
-                    .AddColumn(new TableColumn("[u]Total Score[/]").Footer($"[bold u]{score.ScoreReport.OptimizedLibraries.Sum(x => x.MaxScore)}[/]"));
-
-
-                foreach (var scoreSection in score.ScoreReport?.OptimizedLibraries)
-                {
-                    //If the scoreSection has no issues, just do the tree markup, otherwise add issues / resolution
-                    var scoreSectionTree = new Tree(new Markup($"[bold]{scoreSection.Title}[/]"));
-
-                    if (scoreSection.Summaries != null)
-                        foreach (var scoreSectionSummary in scoreSection?.Summaries)
-                        {
-                            var issueNode = scoreSectionTree.AddNode($"[yellow]{scoreSectionSummary.Issue}[/]");
-                            issueNode.AddNode(
-                                $"[red]{scoreSectionSummary.Resolution}[/]");
-                        }
-
-                    optimizedAssembliesTable
-                        .AddRow(scoreSectionTree, new Markup($"{scoreSection.CurrentScore}"),
-                            new Markup($"[bold]{scoreSection.MaxScore}[/]"));
-                }
-
-                AnsiConsole.Render(optimizedAssembliesTable);
-            }
+            var upToDateDependenciesTable = CreateTable("Up-to-date Dependencies", score.ScoreReport.SupportUpToDateDependencies);
+            AnsiConsole.Render(upToDateDependenciesTable);
         }
     }
 }
